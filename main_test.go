@@ -27,7 +27,7 @@ func TestEqual(t *testing.T) {
 		Link:         "http://iba-world.com/cocktails/bellini/",
 	}
 
-	if !drink1.Equal(drink2) {
+	if !drink1.equal(drink2) {
 		t.Error()
 	}
 
@@ -48,7 +48,7 @@ func TestGetDrinkByName(t *testing.T) {
 	if err != nil {
 		t.Error("Got err from getDrinkByName")
 	}
-	if !want.Equal(got) {
+	if !want.equal(got) {
 		t.Error("Drinks deemed not equal")
 	}
 }

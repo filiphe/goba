@@ -38,45 +38,41 @@ func init() {
 
 func queryDrinks(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
+	var result []Drink
 	if name, ok := query["name"]; ok {
 		drink, err := getDrinkByName(name[0])
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		bytes, err := json.Marshal(drink)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+		if !contains(result, drink) {
+			result = append(result, drink)
 		}
-		w.WriteHeader(http.StatusOK)
-		w.Write(bytes)
 	}
-	var result []Drink
 	if ingredients, ok := query["ingredients"]; ok {
-		fmt.Println(ingredients)
-		drinks, err := getDrinksByIngredient(ingredients)
+		ds, err := getDrinksByIngredient(ingredients)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		for _, drink := range drinks {
+		for _, drink := range ds {
 			fmt.Println("Before adding by ingredients")
-			if !contains(drinks, drink) {
+			fmt.Println(drink)
+			if !contains(result, drink) {
+				fmt.Println("Adding...")
 				result = append(result, drink)
 			}
 		}
 	}
 	if category, ok := query["category"]; ok {
-		fmt.Println(category[0])
-		drinks, err := getDrinksByCategory(category[0])
+		ds, err := getDrinksByCategory(category[0])
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		for _, drink := range drinks {
+		for _, drink := range ds {
 			fmt.Println("Before adding by category")
-			if !contains(drinks, drink) {
+			if !contains(result, drink) {
 				result = append(result, drink)
 			}
 		}
@@ -134,16 +130,17 @@ func getDrinksByIngredient(queryIngredients []string) ([]Drink, error) {
 	return result, nil
 }
 
-func contains(drinks []Drink, d Drink) bool {
-	for _, dr := range drinks {
-		if dr.Equal(d) {
-			return true
+func contains(ds []Drink, d Drink) (result bool) {
+	result = false
+	for _, dr := range ds {
+		if dr.equal(d) {
+			result = true
 		}
 	}
-	return false
+	return
 }
 
-func (drink Drink) Equal(other Drink) bool {
+func (drink Drink) equal(other Drink) bool {
 	value := true
 	if drink.Title == other.Title {
 		if drink.Category == other.Category {
