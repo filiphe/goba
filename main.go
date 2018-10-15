@@ -144,14 +144,16 @@ func contains(drinks []Drink, d Drink) bool {
 }
 
 func (drink Drink) Equal(other Drink) bool {
-	value := false
+	value := true
 	if drink.Title == other.Title {
-		fmt.Println("Title is equal")
 		if drink.Category == other.Category {
-			fmt.Println("Category is equal")
 			if drink.Link == other.Link {
-				fmt.Println("Link is equal")
-				value = true
+				for i := range drink.Ingredients {
+					if drink.Ingredients[i] != other.Ingredients[i] {
+						value = false
+						break
+					}
+				}
 			}
 		}
 	}
