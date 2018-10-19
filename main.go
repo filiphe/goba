@@ -21,6 +21,10 @@ type Drink struct {
 	Link         string   `json:"source"`
 }
 
+func (d Drink) String() string {
+	return fmt.Sprintf("Title: %s, Category: %s, Ingredients: %v\n", d.Title, d.Category, d.Ingredients)
+}
+
 // Drinks holds a list of objects of type Drink
 type Drinks struct {
 	Drinks []Drink `json:"drinks"`
@@ -50,16 +54,15 @@ func queryDrinks(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if ingredients, ok := query["ingredients"]; ok {
+		fmt.Println(ingredients)
 		ds, err := getDrinksByIngredient(ingredients)
+		fmt.Println(ds)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		for _, drink := range ds {
-			fmt.Println("Before adding by ingredients")
-			fmt.Println(drink)
-			if !contains(result, drink) {
-				fmt.Println("Adding...")
+			if ok := contains(result, drink); !ok {
 				result = append(result, drink)
 			}
 		}
@@ -71,13 +74,11 @@ func queryDrinks(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		for _, drink := range ds {
-			fmt.Println("Before adding by category")
 			if !contains(result, drink) {
 				result = append(result, drink)
 			}
 		}
 	}
-	fmt.Println(result)
 	bytes, err := json.Marshal(result)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -140,13 +141,13 @@ func contains(ds []Drink, d Drink) (result bool) {
 	return
 }
 
-func (drink Drink) equal(other Drink) bool {
+func (d Drink) equal(other Drink) bool {
 	value := true
-	if drink.Title == other.Title {
-		if drink.Category == other.Category {
-			if drink.Link == other.Link {
-				for i := range drink.Ingredients {
-					if drink.Ingredients[i] != other.Ingredients[i] {
+	if d.Title == other.Title {
+		if d.Category == other.Category {
+			if d.Link == other.Link {
+				for i := range d.Ingredients {
+					if d.Ingredients[i] != other.Ingredients[i] {
 						value = false
 						break
 					}
@@ -180,5 +181,8 @@ func main() {
 		r.Get("/drink", queryDrinks)
 	})
 
-	http.ListenAndServe(":3333", r)
+	err := http.ListenAndServe(":3333", r)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
